@@ -2,7 +2,7 @@
 
 Dashboard interativa em HTML feita a partir de uma planilha com 100 vendas da Porsche, como projeto prático do curso da DIO sobre relatórios com IA.
 
-🔗 **Dashboard publicada:** https://SEU-USUARIO.github.io/dashboard-porsche-vendas/
+🔗 **Dashboard publicada:** https://RamonLima151.github.io/dashboard-porsche-vendas/
 
 ![Dashboard completa](print-dashboard.png)
 

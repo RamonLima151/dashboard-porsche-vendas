@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Porsche · Vendas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --papel: #EFE6D2;
+    --papel-escuro: #E4D8BD;
+    --tinta: #1C1916;
+    --tinta-suave: #5A5148;
+    --vermelho: #B0141E;
+    --dourado: #B08A3E;
+    --linha: #CDBE9C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--papel);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(255,255,255,.35), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(120,90,40,.10), transparent 45%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 1px, transparent 1px 3px);
+    color: var(--tinta);
+    font-family: 'Courier Prime', monospace;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 20px 48px; }
+
+  /* Cabeçalho estilo pôster de corrida */
+  header {
+    border: 3px solid var(--tinta);
+    outline: 1px solid var(--tinta);
+    outline-offset: 4px;
+    padding: 28px 28px 22px;
+    position: relative;
+    margin-bottom: 34px;
+  }
+  .faixas { display: flex; height: 10px; margin-bottom: 18px; }
+  .faixas span { flex: 1; }
+  .faixas span:nth-child(1) { background: var(--tinta); }
+  .faixas span:nth-child(2) { background: var(--vermelho); }
+  .faixas span:nth-child(3) { background: var(--dourado); }
+  .sobre { font-size: 13px; letter-spacing: .35em; text-transform: uppercase; color: var(--vermelho); font-weight: 700; }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: clamp(38px, 7vw, 72px);
+    line-height: 1;
+    letter-spacing: .02em;
+    margin: 8px 0 10px;
+  }
+  h1 em { color: var(--vermelho); }
+  .subtitulo { color: var(--tinta-suave); font-size: 15px; max-width: 640px; }
+  .selo {
+    position: absolute; top: 22px; right: 26px;
+    width: 92px; height: 92px; border-radius: 50%;
+    border: 2px solid var(--dourado);
+    display: grid; place-items: center; text-align: center;
+    font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--dourado); font-weight: 700; transform: rotate(-12deg);
+  }
+  .selo b { display: block; font-family: 'DM Serif Display', serif; font-size: 26px; letter-spacing: 0; color: var(--tinta); }
+
+  /* Filtros */
+  .filtros {
+    display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 14px;
+    align-items: end; padding: 18px 20px; margin-bottom: 26px;
+    background: var(--papel-escuro); border-top: 2px solid var(--tinta); border-bottom: 2px solid var(--tinta);
+  }
+  .filtros label { display: block; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 6px; color: var(--tinta-suave); font-weight: 700; }
+  select {
+    width: 100%; padding: 9px 10px; font-family: inherit; font-size: 14px;
+    background: var(--papel); color: var(--tinta); border: 1.5px solid var(--tinta); border-radius: 0;
+    appearance: none; cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--tinta) 50%), linear-gradient(135deg, var(--tinta) 50%, transparent 50%);
+    background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+    background-size: 5px 5px; background-repeat: no-repeat;
+  }
+  select:focus { outline: 2px solid var(--vermelho); outline-offset: 1px; }
+  button {
+    padding: 10px 18px; font-family: inherit; font-size: 13px; font-weight: 700;
+    letter-spacing: .15em; text-transform: uppercase; cursor: pointer;
+    background: var(--tinta); color: var(--papel); border: none;
+  }
+  button:hover { background: var(--vermelho); }
+
+  /* Indicadores */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
+  .kpi { border: 1.5px solid var(--tinta); padding: 16px 18px; background: rgba(255,255,255,.25); position: relative; }
+  .kpi::after { content: ''; position: absolute; inset: 4px; border: 1px solid var(--linha); pointer-events: none; }
+  .kpi .rotulo { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--tinta-suave); font-weight: 700; }
+  .kpi .valor { font-family: 'DM Serif Display', serif; font-size: clamp(26px, 3.4vw, 38px); margin-top: 6px; }
+  .kpi:nth-child(2) .valor { color: var(--vermelho); }
+
+  /* Gráficos */
+  .graficos { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .card { min-width: 0; border: 1.5px solid var(--tinta); padding: 20px 20px 18px; background: rgba(255,255,255,.22); }
+  .card.largo { grid-column: 1 / -1; }
+  .numero { font-family: 'DM Serif Display', serif; color: var(--dourado); font-size: 20px; }
+  .card h2 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 24px; margin: 2px 0 14px; }
+  .canvas-box { position: relative; height: 290px; }
+  .card.largo .canvas-box { height: 270px; }
+  .resposta { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--tinta-suave); font-size: 14px; line-height: 1.5; }
+  .resposta b { color: var(--vermelho); }
+  .vazio { text-align: center; padding: 40px 0; color: var(--tinta-suave); }
+
+  footer { margin-top: 36px; text-align: center; font-size: 12px; letter-spacing: .15em; text-transform: uppercase; color: var(--tinta-suave); }
+
+  @media (max-width: 860px) {
+    .filtros { grid-template-columns: 1fr 1fr; }
+    .filtros button { grid-column: 1 / -1; }
+    .kpis { grid-template-columns: 1fr 1fr; }
+    .graficos { grid-template-columns: 1fr; }
+    .selo { display: none; }
+  }
+  @media (max-width: 420px) {
+    .wrap { padding: 20px 16px 36px; }
+    header { padding: 20px 16px 16px; }
+    .filtros, .kpis { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="faixas"><span></span><span></span><span></span></div>
+    <div class="sobre">Relatório de vendas · 100 carros</div>
+    <h1>Porsche <em>em números</em></h1>
+    <p class="subtitulo">Quais carros mais saem, onde eles são vendidos e quanto custa, em média, cada família.</p>
+    <div class="selo"><div>Desde<b>1948</b>Stuttgart</div></div>
+  </header>
+
+  <section class="filtros" aria-label="Filtros">
+    <div><label for="f-familia">Família</label><select id="f-familia"></select></div>
+    <div><label for="f-estado">Estado</label><select id="f-estado"></select></div>
+    <div><label for="f-ano">Ano do modelo</label><select id="f-ano"></select></div>
+    <div><label for="f-pag">Pagamento</label><select id="f-pag"></select></div>
+    <button id="limpar" type="button">Limpar</button>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi"><div class="rotulo">Total de vendas</div><div class="valor" id="k-vendas">–</div></div>
+    <div class="kpi"><div class="rotulo">Receita total</div><div class="valor" id="k-receita">–</div></div>
+    <div class="kpi"><div class="rotulo">Ticket médio</div><div class="valor" id="k-ticket">–</div></div>
+    <div class="kpi"><div class="rotulo">Entregues</div><div class="valor" id="k-entregues">–</div></div>
+  </section>
+
+  <section class="graficos">
+    <div class="card">
+      <div class="numero">I.</div>
+      <h2>Qual família de modelo mais vende?</h2>
+      <div class="canvas-box"><canvas id="g-familia"></canvas></div>
+      <p class="resposta" id="r-familia"></p>
+    </div>
+    <div class="card">
+      <div class="numero">II.</div>
+      <h2>Qual estado vende mais?</h2>
+      <div class="canvas-box"><canvas id="g-estado"></canvas></div>
+      <p class="resposta" id="r-estado"></p>
+    </div>
+    <div class="card largo">
+      <div class="numero">III.</div>
+      <h2>Qual o preço médio de cada família?</h2>
+      <div class="canvas-box"><canvas id="g-preco"></canvas></div>
+      <p class="resposta" id="r-preco"></p>
+    </div>
+  </section>
+
+  <footer>Base sanitizada · sem dados de clientes · Projeto DIO</footer>
+</div>
+
+<script>
+// [id, modelo, familia, ano_modelo, preco, milhagem, pagamento, cidade, estado, status]
+const BRUTO = [[6, "718 Cayman", "718", 2022, 79500.0, 9800, "Credit Card", "Boston", "MA", "Delivered"], [7, "911 Turbo S", "911", 2024, 235000.0, 1200, "Wire Transfer", "Seattle", "WA", "Delivered"], [8, "Cayenne Coupe", "Cayenne", 2023, 112750.0, 6400, "Financing", "Austin", "TX", "In Transit"], [9, "Macan S", "Macan", 2021, 68900.0, 28, "Cash", "Denver", "CO", "Pending"], [10, "Taycan 4S", "Taycan", 2024, 121000.0, 0, "Bank Transfer", "Los Angeles", "CA", "Delivered"], [11, "Panamera 4", "Panamera", 2023, 104500.0, 14500, "Credit Card", "Miami", "FL", "Cancelled"], [12, "911 Carrera S", "911", 2020, 96300.0, 41000, "Lease", "New York", "NY", "Delivered"], [13, "Cayenne E-Hybrid", "Cayenne", 2022, 89750.0, 11744, "Wire Transfer", "San Diego", "CA", "Pending Approval"], [14, "718 Boxster", "718", 2021, 73500.0, 22300, "Debit Card", "Chicago", "IL", "Shipped"], [15, "Macan GTS", "Macan", 2024, 95000.0, 3500, "Financing", "Phoenix", "AZ", "In Transit"], [16, "Taycan Turbo", "Taycan", 2023, 153200.5, 11, "ACH Payment", "Dallas", "TX", "Delivered"], [17, "911 GT3", "911", 2024, 241000.0, 750, "Wire Transfer", "Las Vegas", "NV", "Pending"], [18, "Panamera Turbo S", "Panamera", 2022, 132000.0, 19250, "Cash", "San Jose", "CA", "Delivered"], [19, "Cayenne Turbo GT", "Cayenne", 2024, 188000.0, 2100, "Crypto Payment", "Houston", "TX", "Awaiting Delivery"], [20, "911 Carrera Cabriolet", "911", 2023, 127800.0, 12000, "Credit Card", "Atlanta", "GA", "Delivered"], [21, "Macan", "Macan", 2021, 58900.0, 33700, "Bank Transfer", "Orlando", "FL", "Pending"], [22, "718 Spyder RS", "718", 2024, 164000.0, 900, "Financing", "Portland", "OR", "In Transit"], [23, "Taycan Cross Turismo", "Taycan", 2023, 118500.0, 7800, "Wire Transfer", "Charlotte", "NC", "Delivered"], [24, "Cayenne S", "Cayenne", 2022, 91300.0, 16000, "Credit Card", "Nashville", "TN", "Pending"], [25, "911 Targa 4S", "911", 2024, 158750.0, 2500, "Lease", "Minneapolis", "MN", "Delivered"], [26, "Panamera", "Panamera", 2020, 72000.0, 49000, "Bank Transfer", "Philadelphia", "PA", "Cancelled"], [27, "Macan Electric", "Macan", 2025, 86500.0, 0, "Wire Transfer", "San Antonio", "TX", "Delivered"], [28, "911 Dakar", "911", 2024, 270000.0, 1050, "Cash", "Salt Lake City", "UT", "Awaiting Pickup"], [29, "Taycan GTS", "Taycan", 2023, 139000.0, 6250, "Financing", "Raleigh", "NC", "In Transit"], [30, "Cayenne", "Cayenne", 2021, 76800.0, 38400, "Credit Card", "Detroit", "MI", "Delivered"], [31, "718 Cayman GT4 RS", "718", 2024, 173600.0, 400, "Wire Transfer", "Columbus", "OH", "Pending"], [32, "911 Carrera GTS", "911", 2022, 119900.0, 13600, "Cash", "Indianapolis", "IN", "Delivered"], [33, "Panamera 4 E-Hybrid", "Panamera", 2023, 109250.0, 8900, "Lease", "Fort Worth", "TX", "In Transit"], [34, "Macan T", "Macan", 2022, 82000.0, 21750, "Wire Transfer", "Jacksonville", "FL", "Delivered"], [35, "Taycan Turbo S", "Taycan", 2025, 214000.0, 0, "Crypto Payment", "San Diego", "CA", "Pending Review"], [36, "911 Carrera", "911", 2024, 124500.0, 4800, "Credit Card", "Tampa", "FL", "Delivered"], [37, "Cayenne S", "Cayenne", 2023, 98200.0, 12200, "Bank Transfer", "Sacramento", "CA", "Pending"], [38, "Macan", "Macan", 2022, 67500.0, 24100, "Financing", "Cleveland", "OH", "Delivered"], [39, "Taycan", "Taycan", 2025, 116900.0, 0, "Wire Transfer", "Milwaukee", "WI", "In Transit"], [40, "Panamera 4S", "Panamera", 2024, 112000.0, 10, "Cash", "Kansas City", "MO", "Delivered"], [41, "718 Boxster", "718", 2021, 74000.0, 31000, "Debit Card", "Omaha", "NE", "Cancelled"], [42, "911 Turbo", "911", 2024, 198300.0, 2400, "Wire Transfer", "Albuquerque", "NM", "Awaiting Delivery"], [43, "Cayenne Coupe", "Cayenne", 2023, 103750.0, 6773, "Wire Transfer", "Tucson", "AZ", "Pending Approval"], [44, "Macan GTS", "Macan", 2024, 93600.0, 5800, "Financing", "Fresno", "CA", "Shipped"], [45, "Taycan 4S", "Taycan", 2025, 129000.0, 0, "ACH Payment", "Virginia Beach", "VA", "In Transit"], [46, "Panamera Turbo", "Panamera", 2022, 136000.0, 18400, "Credit Card", "Colorado Springs", "CO", "Delivered"], [47, "911 GT3 RS", "911", 2024, 286500.0, 700, "Wire Transfer", "Arlington", "TX", "Pending"], [48, "Cayenne E-Hybrid", "Cayenne", 2023, 92800.0, 15000, "Lease", "Bakersfield", "CA", "Delivered"], [49, "Macan T", "Macan", 2022, 72400.0, 19750, "Cash", "Mesa", "AZ", "Awaiting Pickup"], [50, "Taycan Turbo", "Taycan", 2025, 158500.0, 3200, "Crypto Payment", "Atlanta", "GA", "Delivered"], [51, "718 Cayman", "718", 2021, 69900.0, 27600, "Bank Transfer", "Long Beach", "CA", "Pending"], [52, "911 Targa 4", "911", 2024, 141250.0, 2100, "Financing", "Oakland", "CA", "In Transit"], [53, "Panamera", "Panamera", 2020, 71500.0, 52000, "Wire Transfer", "Tulsa", "OK", "Delivered"], [54, "Cayenne Turbo", "Cayenne", 2023, 146800.0, 11300, "Credit Card", "Wichita", "KS", "Pending"], [55, "Macan Electric", "Macan", 2025, 89700.0, 0, "Lease", "New Orleans", "LA", "Delivered"], [56, "911 Carrera S", "911", 2022, 104600.0, 15900, "Bank Transfer", "Honolulu", "HI", "Cancelled"], [57, "Taycan GTS", "Taycan", 2024, 142000.0, 6600, "Wire Transfer", "Anaheim", "CA", "Delivered"], [58, "Cayenne", "Cayenne", 2021, 78400.0, 40250, "Cash", "Henderson", "NV", "Awaiting Review"], [59, "718 Spyder RS", "718", 2025, 169000.0, 850, "Financing", "Lexington", "KY", "In Transit"], [60, "911 Dakar", "911", 2024, 268900.0, 1400, "Credit Card", "Riverside", "CA", "Delivered"], [61, "Panamera 4", "Panamera", 2023, 101300.0, 12700, "Wire Transfer", "Corpus Christi", "TX", "Pending"], [62, "Macan S", "Macan", 2021, 66750.0, 29800, "Cash", "St. Louis", "MO", "Delivered"], [63, "Taycan Cross Turismo", "Taycan", 2024, 127900.0, 7500, "Lease", "Pittsburgh", "PA", "In Transit"], [64, "Cayenne Turbo GT", "Cayenne", 2025, 200000.0, 1950, "Wire Transfer", "Cincinnati", "OH", "Delivered"], [65, "911 Carrera Cabriolet", "911", 2023, 132000.0, 8800, "Crypto Payment", "Anchorage", "AK", "Pending Review"], [66, "718 Cayman GT4 RS", "718", 2024, 176400.0, 600, "Credit Card", "Plano", "TX", "Delivered"], [67, "Panamera 4 E-Hybrid", "Panamera", 2022, 108500.0, 16200, "Bank Transfer", "Newark", "NJ", "Cancelled"], [68, "Macan", "Macan", 2021, 59000.0, 36000, "Financing", "Greensboro", "NC", "Awaiting Delivery"], [69, "Taycan Turbo S", "Taycan", 2025, 218000.0, 0, "Wire Transfer", "Lincoln", "NE", "Pending"], [70, "Cayenne S", "Cayenne", 2024, 99950.0, 5300, "Debit Card", "Jersey City", "NJ", "Delivered"], [71, "911 Carrera GTS", "911", 2024, 121750.0, 5872, "Credit Card", "Chandler", "AZ", "Delivered"], [72, "718 Boxster GTS", "718", 2023, 91500.0, 13300, "Lease", "Reno", "NV", "Shipped"], [73, "Panamera Turbo S", "Panamera", 2022, 134000.0, 20100, "Wire Transfer", "Buffalo", "NY", "In Transit"], [74, "Macan GTS", "Macan", 2024, 96800.0, 0, "ACH Payment", "Durham", "NC", "Delivered"], [75, "Taycan 4S", "Taycan", 2025, 131600.0, 2900, "Wire Transfer", "Laredo", "TX", "Pending Approval"], [76, "Cayenne E-Hybrid", "Cayenne", 2023, 94300.0, 13100, "Cash", "Madison", "WI", "Delivered"], [77, "911 Turbo S", "911", 2025, 242000.0, 1100, "Crypto Payment", "Lubbock", "TX", "Awaiting Pickup"], [78, "718 Cayman S", "718", 2022, 82750.0, 22500, "Credit Card", "Toledo", "OH", "Cancelled"], [79, "Macan Electric", "Macan", 2026, 91300.0, 0, "Wire Transfer", "Irvine", "CA", "Delivered"], [80, "Panamera", "Panamera", 2021, 79900.0, 44800, "Financing", "Garland", "TX", "Pending"], [81, "Cayenne Coupe", "Cayenne", 2024, 111000.0, 6700, "Bank Transfer", "Irving", "TX", "In Transit"], [82, "911 Targa 4S", "911", 2023, 156500.0, 4200, "Cash", "Chesapeake", "VA", "Delivered"], [83, "Taycan", "Taycan", 2025, 119900.0, 1250, "Lease", "Scottsdale", "AZ", "Pending"], [84, "Macan T", "Macan", 2022, 73200.0, 18600, "Wire Transfer", "Norfolk", "VA", "Delivered"], [85, "911 GT3", "911", 2024, 224000.0, 3000, "Wire Transfer", "Boise", "ID", "Awaiting Delivery"], [86, "911 Carrera", "911", 2024, 126900.0, 7200, "Credit Card", "Orlando", "FL", "Delivered"], [87, "Cayenne", "Cayenne", 2023, 84500.0, 21400, "Bank Transfer", "San Jose", "CA", "Pending"], [88, "Macan S", "Macan", 2022, 69800.0, 26300, "Financing", "Tampa", "FL", "Delivered"], [89, "Taycan 4S", "Taycan", 2025, 132700.0, 0, "Wire Transfer", "Denver", "CO", "In Transit"], [90, "Panamera", "Panamera", 2021, 81000.0, 42, "Cash", "Austin", "TX", "Delivered"], [91, "718 Cayman", "718", 2023, 78900.0, 17500, "Debit Card", "Seattle", "WA", "Cancelled"], [92, "911 Turbo S", "911", 2026, 249300.0, 900, "Wire Transfer", "Boston", "MA", "Awaiting Delivery"], [93, "Cayenne Coupe", "Cayenne", 2024, 108750.0, 5530, "Wire Transfer", "Phoenix", "AZ", "Pending Approval"], [94, "Macan Electric", "Macan", 2026, 92600.0, 0, "Financing", "Chicago", "IL", "Shipped"], [95, "Taycan Turbo", "Taycan", 2025, 164000.0, 0, "ACH Payment", "Dallas", "TX", "In Transit"], [96, "Panamera 4S", "Panamera", 2024, 119000.0, 13400, "Credit Card", "San Francisco", "CA", "Delivered"], [97, "911 GT3", "911", 2026, 232500.0, 1700, "Wire Transfer", "Las Vegas", "NV", "Pending"], [98, "Cayenne E-Hybrid", "Cayenne", 2023, 96800.0, 14000, "Lease", "Charlotte", "NC", "Delivered"], [99, "Macan T", "Macan", 2022, 74400.0, 20750, "Cash", "Mesa", "AZ", "Awaiting Pickup"], [100, "Taycan GTS", "Taycan", 2025, 148500.0, 5200, "Crypto Payment", "Atlanta", "GA", "Delivered"], [101, "718 Boxster", "718", 2021, 71900.0, 29600, "Bank Transfer", "Long Beach", "CA", "Pending"], [102, "911 Targa 4", "911", 2024, 143250.0, 3100, "Financing", "Oakland", "CA", "In Transit"], [103, "Panamera Turbo", "Panamera", 2020, 137500.0, 48000, "Wire Transfer", "Tulsa", "OK", "Delivered"], [104, "Cayenne Turbo GT", "Cayenne", 2025, 204800.0, 3300, "Credit Card", "Wichita", "KS", "Pending"], [105, "911 Dakar", "911", 2024, 271700.0, 1050, "Lease", "New Orleans", "LA", "Delivered"]];
+const vendas = BRUTO.map(r => ({
+  id: r[0], modelo: r[1], familia: r[2], ano: r[3], preco: r[4],
+  milhagem: r[5], pagamento: r[6], cidade: r[7], estado: r[8], status: r[9]
+}));
+
+const PAGAMENTO_PT = {
+  'Wire Transfer': 'Transferência (wire)', 'Credit Card': 'Cartão de crédito',
+  'Financing': 'Financiamento', 'Cash': 'Dinheiro', 'Bank Transfer': 'Transferência bancária',
+  'Lease': 'Leasing', 'Crypto Payment': 'Criptomoeda', 'Debit Card': 'Cartão de débito',
+  'ACH Payment': 'ACH'
+};
+
+const COR = { tinta: '#1C1916', vermelho: '#B0141E', dourado: '#B08A3E', suave: '#5A5148', linha: '#CDBE9C' };
+const usd = v => 'US$ ' + Math.round(v).toLocaleString('pt-BR');
+const usdCurto = v => v >= 1e6 ? 'US$ ' + (v / 1e6).toFixed(1).replace('.', ',') + ' mi'
+                    : 'US$ ' + Math.round(v / 1000) + ' mil';
+
+// ---- filtros ----
+const filtros = {
+  familia: document.getElementById('f-familia'),
+  estado: document.getElementById('f-estado'),
+  ano: document.getElementById('f-ano'),
+  pagamento: document.getElementById('f-pag')
+};
+function preencher(sel, campo, rotulo) {
+  const valores = [...new Set(vendas.map(v => v[campo]))].sort((a, b) => a > b ? 1 : -1);
+  sel.innerHTML = '<option value="">Todos</option>' +
+    valores.map(v => `<option value="${v}">${rotulo ? rotulo(v) : v}</option>`).join('');
+}
+preencher(filtros.familia, 'familia');
+preencher(filtros.estado, 'estado');
+preencher(filtros.ano, 'ano');
+preencher(filtros.pagamento, 'pagamento', v => PAGAMENTO_PT[v] || v);
+
+function filtrar() {
+  return vendas.filter(v =>
+    Object.entries(filtros).every(([campo, sel]) => !sel.value || String(v[campo]) === sel.value));
+}
+
+function agrupar(lista, campo) {
+  const g = {};
+  lista.forEach(v => {
+    g[v[campo]] = g[v[campo]] || { qtd: 0, soma: 0 };
+    g[v[campo]].qtd++; g[v[campo]].soma += v.preco;
+  });
+  return Object.entries(g).map(([nome, x]) => ({ nome, qtd: x.qtd, soma: x.soma, media: x.soma / x.qtd }));
+}
+
+// ---- gráficos ----
+Chart.defaults.font.family = "'Courier Prime', monospace";
+Chart.defaults.font.size = 13;
+Chart.defaults.color = COR.suave;
+
+function novoGrafico(id, horizontal, formatar) {
+  return new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderRadius: 0, maxBarThickness: 46 }] },
+    options: {
+      indexAxis: horizontal ? 'y' : 'x',
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: COR.tinta, titleFont: { family: "'DM Serif Display', serif", size: 15 },
+          padding: 10, cornerRadius: 0,
+          callbacks: { label: c => ' ' + formatar(c.raw) }
+        }
+      },
+      scales: {
+        x: { grid: { display: horizontal, color: COR.linha }, border: { color: COR.tinta },
+             ticks: horizontal ? { callback: v => formatar(v, true) } : { color: COR.tinta, font: { weight: 'bold' } } },
+        y: { grid: { display: !horizontal, color: COR.linha }, border: { color: COR.tinta },
+             ticks: horizontal ? { color: COR.tinta, font: { weight: 'bold' } } : { callback: v => formatar(v, true), precision: 0 } }
+      }
+    }
+  });
+}
+const qtd = (v) => v + (v === 1 ? ' venda' : ' vendas');
+const gFamilia = novoGrafico('g-familia', false, (v, eixo) => eixo ? v : qtd(v));
+const gEstado = novoGrafico('g-estado', true, (v, eixo) => eixo ? v : qtd(v));
+const gPreco = novoGrafico('g-preco', false, (v, eixo) => eixo ? usdCurto(v) : usd(v));
+
+function desenhar(grafico, itens, valor, corBase) {
+  grafico.data.labels = itens.map(i => i.nome);
+  grafico.data.datasets[0].data = itens.map(valor);
+  grafico.data.datasets[0].backgroundColor = itens.map((_, i) => i === 0 ? COR.vermelho : corBase);
+  grafico.update();
+}
+
+// ---- atualização ----
+function atualizar() {
+  const lista = filtrar();
+  const total = lista.length;
+  const receita = lista.reduce((s, v) => s + v.preco, 0);
+  const entregues = lista.filter(v => v.status === 'Delivered').length;
+
+  document.getElementById('k-vendas').textContent = total;
+  document.getElementById('k-receita').textContent = total ? usdCurto(receita) : '–';
+  document.getElementById('k-ticket').textContent = total ? usdCurto(receita / total) : '–';
+  document.getElementById('k-entregues').textContent = total ? Math.round(entregues / total * 100) + '%' : '–';
+
+  if (!total) {
+    [gFamilia, gEstado, gPreco].forEach(g => desenhar(g, [], x => x, COR.tinta));
+    ['r-familia', 'r-estado', 'r-preco'].forEach(id =>
+      document.getElementById(id).textContent = 'Nenhuma venda com essa combinação de filtros.');
+    return;
+  }
+
+  const porFamilia = agrupar(lista, 'familia').sort((a, b) => b.qtd - a.qtd || b.soma - a.soma);
+  const porEstado = agrupar(lista, 'estado').sort((a, b) => b.qtd - a.qtd || b.soma - a.soma).slice(0, 10);
+  const porPreco = agrupar(lista, 'familia').sort((a, b) => b.media - a.media);
+
+  desenhar(gFamilia, porFamilia, i => i.qtd, COR.tinta);
+  desenhar(gEstado, porEstado, i => i.qtd, COR.tinta);
+  desenhar(gPreco, porPreco, i => i.media, COR.dourado);
+
+  const f1 = porFamilia[0], e1 = porEstado[0], p1 = porPreco[0], pU = porPreco[porPreco.length - 1];
+  const empateF = porFamilia.filter(x => x.qtd === f1.qtd).length > 1;
+  const empateE = porEstado.filter(x => x.qtd === e1.qtd).length > 1;
+
+  document.getElementById('r-familia').innerHTML = empateF
+    ? `Empate no topo com <b>${f1.qtd} vendas</b> cada: ${porFamilia.filter(x => x.qtd === f1.qtd).map(x => x.nome).join(', ')}.`
+    : `O <b>${f1.nome}</b> lidera com <b>${f1.qtd} vendas</b>, ${Math.round(f1.qtd / total * 100)}% do total filtrado.`;
+
+  document.getElementById('r-estado').innerHTML = empateE
+    ? `Empate no topo com <b>${e1.qtd} vendas</b>: ${porEstado.filter(x => x.qtd === e1.qtd).map(x => x.nome).join(', ')}.`
+    : `<b>${e1.nome}</b> é o estado que mais vende, com <b>${e1.qtd} vendas</b> e ${usdCurto(e1.soma)} em receita. (Top 10 estados no gráfico.)`;
+
+  document.getElementById('r-preco').innerHTML = porPreco.length > 1
+    ? `O <b>${p1.nome}</b> tem o maior ticket médio (<b>${usd(p1.media)}</b>), cerca de ${(p1.media / pU.media).toFixed(1).replace('.', ',')}× o do <b>${pU.nome}</b> (${usd(pU.media)}).`
+    : `Preço médio do <b>${p1.nome}</b>: <b>${usd(p1.media)}</b>.`;
+}
+
+Object.values(filtros).forEach(sel => sel.addEventListener('change', atualizar));
+document.getElementById('limpar').addEventListener('click', () => {
+  Object.values(filtros).forEach(sel => sel.value = '');
+  atualizar();
+});
+atualizar();
+</script>
+</body>
+</html>
